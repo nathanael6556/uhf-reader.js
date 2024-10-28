@@ -38,9 +38,11 @@ export class SerialConnection implements Connection {
     async read(): Promise<Uint8Array> {
         if (!this.ser.readable)
             throw Error("Serial port is not readable");
-        const data = await streamToBytes(this.ser.readable);
-        console.log("Serial Read:", data)
-        return data
+        const data = streamToBytes(this.ser.readable);
+        data.then(()=>{
+            console.log("Serial Read:", data);
+        })
+        return data;
     }
 
     write(data:Uint8Array): Promise<void> {
