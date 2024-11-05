@@ -256,9 +256,15 @@ export class UHFReader18CompliantReader {
         return epc_list;
     }
 
-    inventory(): Uint8Array[] {
+    inventory(adrTID: Uint8Array = null, lenTID: Uint8Array = null): Uint8Array[] {
         let cmd = this.CMD_INVENTORY;
-        let data = new Uint8Array(0);
+        let data: Uint8Array;
+        if (adrTID == null || lenTID == null) {
+            data = concatBytes([adrTID, lenTID]);
+        }
+        else {
+            data = new Uint8Array(0);
+        }
         let response = this.send_command(cmd, data);
 
         if (!response)
