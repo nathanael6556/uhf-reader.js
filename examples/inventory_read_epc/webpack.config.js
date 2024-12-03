@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './tests/index.ts',
+  entry: './examples/inventory_read_epc/index.ts',
   devtool: 'inline-source-map',
   module: {
     rules: [

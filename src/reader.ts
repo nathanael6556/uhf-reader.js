@@ -38,6 +38,86 @@ export interface WorkMode {
     offset_time: Uint8Array;
 }
 
+export class EPCBlock {
+    epc_word_length: Uint8Array;
+    user_memory_indicator: Boolean;
+    xpc_w1_indicator: Boolean;
+    gs1_compliance: Boolean;
+    application_family_identifier: Uint8Array;
+    epc: Uint8Array;
+    xpc: Uint8Array;
+
+    constructor(
+        epc_word_length: Uint8Array,
+        user_memory_indicator: Boolean,
+        xpc_w1_indicator: Boolean,
+        gs1_compliance: Boolean,
+        application_family_identifier: Uint8Array,
+        epc: Uint8Array,
+        xpc: Uint8Array
+    ) {
+        this.set(
+            epc_word_length,
+            user_memory_indicator,
+            xpc_w1_indicator,
+            gs1_compliance,
+            application_family_identifier,
+            epc,
+            xpc
+        );
+    }
+
+    set(
+        epc_word_length: Uint8Array,
+        user_memory_indicator: Boolean,
+        xpc_w1_indicator: Boolean,
+        gs1_compliance: Boolean,
+        application_family_identifier: Uint8Array,
+        epc: Uint8Array,
+        xpc: Uint8Array
+    ): void {
+        this.epc_word_length = epc_word_length;
+        this.user_memory_indicator = user_memory_indicator;
+        this.xpc_w1_indicator = xpc_w1_indicator;
+        this.gs1_compliance = gs1_compliance;
+        this.application_family_identifier = application_family_identifier;
+        this.epc = epc;
+        this.xpc = xpc;
+    }
+
+    setFrom(other: EPCBlock): void {
+        this.set(
+            other.epc_word_length,
+            other.user_memory_indicator,
+            other.xpc_w1_indicator,
+            other.gs1_compliance,
+            other.application_family_identifier,
+            other.epc,
+            other.xpc
+        );
+    }
+
+    epcEqualsWith(other: EPCBlock): Boolean {
+        return isEqualBytes(this.epc, other.epc);
+    }
+};
+
+export class PasswordBlock {
+    kill: Uint8Array;
+    access: Uint8Array;
+    other: Uint8Array;
+
+    constructor(kill: Uint8Array, access: Uint8Array, other?: Uint8Array) {
+        this.set(kill, access, other);
+    }
+
+    set(kill: Uint8Array, access: Uint8Array, other?: Uint8Array): void {
+        this.kill = kill;
+        this.access = access;
+        this.other = other;
+    }
+};
+
 export class UHFReader18CompliantReader {
     // Command code
     CMD_INVENTORY = 0x01;
@@ -179,40 +259,68 @@ export class UHFReader18CompliantReader {
         return { length, adr, recmd, status, data, crc };
     }
 
-    get_response(): ResponseDataBlock {
-        let RDB = this.conn.read();
-        if (!RDB)
+    async get_response(): Promise<ResponseDataBlock> {
+        let length = (await this.conn.read(1));
+        if (!length)
             return;
+
+        let RDB = concatBytes([length, await this.conn.read(length[0])]);
 
         let response = this.decompose_RDB(RDB);
         let status = response["status"];
 
         if (status == 0x05) {
-            throw new exceptions.AccessPasswordError("Access password is invalid");
+            throw new exceptions.AccessPasswordError(
+                "Access password is invalid"
+            );
         } else if (status == 0x0B) {
-            throw new exceptions.NotSupportCommandError("Tag does not support command");
+            throw new exceptions.NotSupportCommandError(
+                "Tag does not support command"
+            );
         } else if (status == 0x0C) {
-            throw new exceptions.AccessPasswordIsZeroError("Command requires non-zero access password");
+            throw new exceptions.AccessPasswordIsZeroError(
+                "Command requires non-zero access password"
+            );
         } else if (status == 0x13) {
-            throw new exceptions.SaveFailError("Fail to save");
+            throw new exceptions.SaveFailError(
+                "Fail to save"
+            );
         } else if (status == 0x14) {
-            throw new exceptions.CannotAdjustError("Power can not be adjusted");
+            throw new exceptions.CannotAdjustError(
+                "Power can not be adjusted"
+            );
         } else if (status == 0x19) {
-            throw new exceptions.NotSupportCommandOrAccessPasswordError("Command is not supported or access password is invalid");
+            throw new exceptions.NotSupportCommandOrAccessPasswordError(
+                "Command is not supported or access password is invalid"
+            );
         } else if (status == 0xF9) {
-            throw new exceptions.CommandExecuteError("Fail to execute command");
+            throw new exceptions.CommandExecuteError(
+                "Fail to execute command"
+            );
         } else if (status == 0xFA) {
-            throw new exceptions.PoorCommunicationError("Poor communication between reader and tag");
+            throw new exceptions.PoorCommunicationError(
+                "Poor communication between reader and tag"
+            );
         } else if (status == 0xFB) {
-            throw new exceptions.NoTagOperableError("No tag in the effective field");
+            throw new exceptions.NoTagOperableError(
+                "No tag in the effective field"
+            );
         } else if (status == 0xFC) {
-            throw new exceptions.TagReturnCodeError("Error code: " + bytesToHex(response["data"]));
+            throw new exceptions.TagReturnCodeError(
+                "Error code: " + bytesToHex(response["data"])
+            );
         } else if (status == 0xFD) {
-            throw new exceptions.CommandLengthWrongError("Length of command doesn't conform to the command request");
+            throw new exceptions.CommandLengthWrongError(
+                "Length of command doesn't conform to the command request"
+            );
         } else if (status == 0xFE) {
-            throw new exceptions.IllegalCommandError("Unrecognized command or CRC error");
+            throw new exceptions.IllegalCommandError(
+                "Unrecognized command or CRC error"
+            );
         } else if (status == 0xFF) {
-            throw new exceptions.ParameterError("Command parameter is invalid");
+            throw new exceptions.ParameterError(
+                "Command parameter is invalid"
+            );
         }
 
         if (response["recmd"] == 0xEE) {  // response is a result of scan
@@ -223,10 +331,10 @@ export class UHFReader18CompliantReader {
         return response;
     }
 
-    send_command(cmd: number, data: Uint8Array): ResponseDataBlock {
+    async send_command(cmd: number, data: Uint8Array): Promise<ResponseDataBlock> {
         let CDB = this.compose_CDB(cmd, data);
         this.conn.write(CDB);
-        let response = this.get_response();
+        let response = await this.get_response();
 
         response["recmd"] == cmd, "Response command invalid";
 
@@ -243,23 +351,31 @@ export class UHFReader18CompliantReader {
         let num = data[0];
 
         let epc_list: Uint8Array[] = [];
-        let index = 0;
+        let index = 1;
         while (epc_list.length < num) {
             // First byte is the length
             let length = data[index++];
             // EPC is exactly after the length
             let epc = data.slice(index, index + length);
             epc_list.push(epc);
-            index += length;
+            index += length + 1;
         }
 
         return epc_list;
     }
 
-    inventory(): Uint8Array[] {
+    async inventory(
+        adr_tid?: Uint8Array,
+        len_tid?: Uint8Array
+    ): Promise<Uint8Array[]> {
         let cmd = this.CMD_INVENTORY;
-        let data = new Uint8Array(0);
-        let response = this.send_command(cmd, data);
+        let data: Uint8Array;
+        if (adr_tid == null || len_tid == null) {
+            data = new Uint8Array(0);
+        } else {
+            data = concatBytes([adr_tid, len_tid]);
+        }
+        let response = await this.send_command(cmd, data);
 
         if (!response)
             return;
@@ -276,7 +392,52 @@ export class UHFReader18CompliantReader {
         this.scan_callback(response);
     }
 
-    read_data(
+    decompose_EPC(data: Uint8Array) {
+        // Bits 00h to 0Fh
+        let supposed_crc = data.slice(0, 2);
+
+        // Bits 10h to 1Fh
+        let protocol_control = data.slice(2, 4)
+        // Decompose protocol control
+        // Bits 10h to 14h
+        let epc_word_length = protocol_control[0] >> 3
+        // Bit 15h
+        let user_memory_indicator = Boolean((protocol_control[0] >> 2) & 1);
+        // Bit 16h
+        let xpc_w1_indicator = Boolean((protocol_control[0] >> 1) & 1);
+
+        // Bit 17h
+        let gs1_compliance = Boolean(protocol_control[0] & 1);
+        // Bits 18h to 1Fh
+        let application_family_identifier = protocol_control[1];
+
+        // EPC starts from 20h
+        let epc_byte_length = epc_word_length * 2;
+        let epc = data.slice(4, 4 + epc_byte_length);
+
+        // XPC starts after EPC
+        let xpc = data.slice(4 + epc_byte_length);
+
+        return new EPCBlock(
+            new Uint8Array([epc_word_length]),
+            user_memory_indicator,
+            xpc_w1_indicator,
+            gs1_compliance,
+            new Uint8Array([application_family_identifier]),
+            epc,
+            xpc,
+        );
+    }
+
+    decompose_PWD(data) {
+        return new PasswordBlock(
+            data.slice(0, 4),
+            data.slice(4, 8),
+            data.slice(8)
+        );
+    }
+
+    async read_data(
         epc: Uint8Array,
         mem: number = this.MEM_EPC,
         wordptr: Uint8Array = new Uint8Array([0x00]),
@@ -284,7 +445,7 @@ export class UHFReader18CompliantReader {
         pwd: Uint8Array = this.PWD_ZERO,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): Uint8Array {
+    ): Promise<EPCBlock | PasswordBlock | Uint8Array> {
         let _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         let cmd = this.CMD_READ_DATA;
         let data = concatBytes([
@@ -297,13 +458,20 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        let response = this.send_command(cmd, data);
+        let response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
 
-        return response["data"];
+        data = response["data"];
+        if (mem == this.MEM_EPC) {
+            return this.decompose_EPC(data);
+        } else if (mem == this.MEM_PWD) {
+            return this.decompose_PWD(data);
+        }
+
+        return data;
     }
 
-    write_data(
+    async write_data(
         epc: Uint8Array,
         mem: Uint8Array,
         wordptr: Uint8Array,
@@ -311,7 +479,7 @@ export class UHFReader18CompliantReader {
         pwd: Uint8Array = this.PWD_ZERO,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): void {
+    ): Promise<void> {
         const cmd = this.CMD_WRITE_DATA;
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const wnum = numberToBytes(this.calc_word_length(wdt), 1, 'big');
@@ -326,11 +494,14 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    write_epc(wepc: Uint8Array, pwd: Uint8Array = this.PWD_ZERO): void {
+    async write_epc(
+        wepc: Uint8Array,
+        pwd: Uint8Array = this.PWD_ZERO
+    ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(wepc), 1, 'big');
         const cmd = this.CMD_WRITE_EPC;
         const data = concatBytes([
@@ -338,16 +509,16 @@ export class UHFReader18CompliantReader {
             pwd,
             wepc
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    kill_tag(
+    async kill_tag(
         epc: Uint8Array,
         killpwd: Uint8Array,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): void {
+    ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_KILL_TAG;
         const data = concatBytes([
@@ -357,18 +528,18 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    lock(
+    async lock(
         epc: Uint8Array,
         select: Uint8Array,
         setprotect: Uint8Array,
         pwd: Uint8Array,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): void {
+    ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_LOCK;
         const data = concatBytes([
@@ -380,11 +551,11 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    block_erase(
+    async block_erase(
         epc: Uint8Array,
         mem: Uint8Array,
         wordptr: Uint8Array,
@@ -392,7 +563,7 @@ export class UHFReader18CompliantReader {
         pwd: Uint8Array = this.PWD_ZERO,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): void {
+    ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_BLOCK_ERASE;
         const data = concatBytes([
@@ -405,14 +576,14 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    inventory_single(): Uint8Array[] {
+    async inventory_single(): Promise<Uint8Array[]> {
         const cmd = this.CMD_INVENTORY_SINGLE;
         const data = new Uint8Array(0);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
 
         if (!response)
             return;
@@ -423,7 +594,7 @@ export class UHFReader18CompliantReader {
         return this.parse_multiple_epc(response["data"]);
     }
 
-    block_write(
+    async block_write(
         epc: Uint8Array,
         mem: Uint8Array,
         wordptr: Uint8Array,
@@ -431,7 +602,7 @@ export class UHFReader18CompliantReader {
         pwd: Uint8Array = this.PWD_ZERO,
         maskadr: Uint8Array = new Uint8Array([0x00]),
         masklen: Uint8Array = new Uint8Array([0x01])
-    ): void {
+    ): Promise<void> {
         const cmd = this.CMD_BLOCK_WRITE;
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const wnum = numberToBytes(this.calc_word_length(wdt), 1, 'big');
@@ -446,14 +617,14 @@ export class UHFReader18CompliantReader {
             maskadr,
             masklen
         ]);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    get_reader_info(): ReaderInfo {
+    async get_reader_info(): Promise<ReaderInfo> {
         const cmd = this.CMD_GET_READER_INFO;
         const data = new Uint8Array(0);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
 
         const resp_data = response["data"];
         this.assert_resp_zero_status(response);
@@ -469,14 +640,14 @@ export class UHFReader18CompliantReader {
         };
     }
 
-    set_work_mode(
+    async set_work_mode(
         read_mode: Uint8Array,
         mode_state: Uint8Array | number,
         mem_inven: number = this.MEM_EPC,
         first_adr: Uint8Array = new Uint8Array([0x00]),
         word_num: Uint8Array = new Uint8Array([0x01]),
         tag_time: Uint8Array = new Uint8Array([0x00])
-    ): void {
+    ): Promise<void> {
         if (typeof mode_state === 'number')
             mode_state = numberToBytes(mode_state, 1, "big");
 
@@ -489,14 +660,14 @@ export class UHFReader18CompliantReader {
             word_num,
             tag_time
         ]);
-        let response = this.send_command(cmd, data);
+        let response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
 
-    get_work_mode(): WorkMode {
+    async get_work_mode(): Promise<WorkMode> {
         const cmd = this.CMD_GET_WORK_MODE;
         const data = new Uint8Array(0);
-        const response = this.send_command(cmd, data);
+        const response = await this.send_command(cmd, data);
 
         if (response["status"] != 0x00)
             throw new Error();
