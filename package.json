@@ -1,9 +1,17 @@
 {
-  "package-name": "uhf-reader",
   "name": "uhf-reader",
   "version": "1.0.0",
   "description": "Client library for connection with UHF RFID reader devices",
   "main": "src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./connection": "./src/connection.ts",
+    "./crc": "./src/crc.ts",
+    "./exceptions": "./src/exceptions.ts",
+    "./reader": "./src/reader.ts",
+    "./utils": "./src/utils.ts"
+  },
   "git repository": "https://github.com/nathanael6556/uhf-reader.js",
   "keywords": ["uhf", "communication", "serial", "webserial"],
   "scripts": {
