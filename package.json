@@ -1,8 +1,11 @@
 {
+  "package-name": "uhf-reader",
   "name": "uhf-reader",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Client library for connection with UHF RFID reader devices",
-  "main": "index.ts",
+  "main": "src/index.ts",
+  "git repository": "https://github.com/nathanael6556/uhf-reader.js",
+  "keywords": ["uhf", "communication", "serial", "webserial"],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
