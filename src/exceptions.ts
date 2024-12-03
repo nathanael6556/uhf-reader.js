@@ -1,10 +1,8 @@
 export class AccessPasswordError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Access password is invalid"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "AccessPasswordError";
@@ -12,12 +10,10 @@ export class AccessPasswordError extends Error {
 }
 
 export class NotSupportCommandError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Tag does not support command"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "NotSupportCommandError";
@@ -25,12 +21,10 @@ export class NotSupportCommandError extends Error {
 }
 
 export class AccessPasswordIsZeroError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Command requires non-zero access password"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "AccessPasswordIsZeroError";
@@ -38,12 +32,10 @@ export class AccessPasswordIsZeroError extends Error {
 }
 
 export class SaveFailError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Fail to save"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "SaveFailError";
@@ -51,12 +43,10 @@ export class SaveFailError extends Error {
 }
 
 export class CannotAdjustError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Power can not be adjusted"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "CannotAdjustError";
@@ -64,12 +54,10 @@ export class CannotAdjustError extends Error {
 }
 
 export class NotSupportCommandOrAccessPasswordError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Command is not supported or access password is invalid"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "NotSupportCommandOrAccessPasswordError";
@@ -77,12 +65,10 @@ export class NotSupportCommandOrAccessPasswordError extends Error {
 }
 
 export class CommandExecuteError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Fail to execute command"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "CommandExecuteError";
@@ -90,12 +76,10 @@ export class CommandExecuteError extends Error {
 }
 
 export class PoorCommunicationError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Poor communication between reader and tag"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "PoorCommunicationError";
@@ -103,12 +87,10 @@ export class PoorCommunicationError extends Error {
 }
 
 export class NoTagOperableError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "No tag in the effective field"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "NoTagOperableError";
@@ -116,12 +98,10 @@ export class NoTagOperableError extends Error {
 }
 
 export class TagReturnCodeError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Tag return error code";
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "TagReturnCodeError";
@@ -129,12 +109,10 @@ export class TagReturnCodeError extends Error {
 }
 
 export class CommandLengthWrongError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Length of command doesn't conform to the command request"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "CommandLengthWrongError";
@@ -142,12 +120,10 @@ export class CommandLengthWrongError extends Error {
 }
 
 export class IllegalCommandError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Unrecognized command or CRC error"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "IllegalCommandError";
@@ -155,12 +131,10 @@ export class IllegalCommandError extends Error {
 }
 
 export class ParameterError extends Error {
-    constructor(message: string) {
+    constructor(message?: string) {
         const baseMessage = "Command parameter is invalid"
-        if (message) {
-            message = baseMessage + ".\n" + message;
-        } else {
-            message = baseMessage;
+        if (!message) {
+            message = baseMessage
         }
         super(message);
         this.name = "ParameterError";
