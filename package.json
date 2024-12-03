@@ -1,6 +1,6 @@
 {
   "name": "uhf-reader",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Client library for connection with UHF RFID reader devices",
   "main": "index.ts",
   "scripts": {
