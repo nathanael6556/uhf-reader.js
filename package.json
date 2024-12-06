@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Client library for connection with UHF RFID reader devices",
   "main": "src/index.ts",
-  "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./connection": "./src/connection.ts",

@@ -38,7 +38,7 @@ function random_bytes(length: number = 1): Uint8Array {
 async function app() {
   while (1) {
     try {
-      (await reader.inventory(new Uint8Array([0]), new Uint8Array([2]))).forEach(async (element) => {
+      (await reader.inventory()).forEach(async (element) => {
         console.log("EPC Inventory: ", bytesToHex(element));
         let epc: EPCBlock = await reader.read_data(
           element,
