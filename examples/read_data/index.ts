@@ -78,7 +78,7 @@ async function app() {
         } catch (e) {
           if (
             e instanceof TagReturnCodeError
-            && e.tagErrorCode == 0x03
+            && e.tagErrorCode == reader.TAG_ERROR_MEMORY_OVERRUN
           ) {
             console.log("It seems like the tag doesn't have user memory");
           }

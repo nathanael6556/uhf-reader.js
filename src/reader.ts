@@ -196,6 +196,13 @@ export class UHFReader18CompliantReader {
     SP_SECURED = 0x02;
     SP_NEVER = 0x03;
 
+    // Tag error codes
+    TAG_ERROR_OTHER = 0x00
+    TAG_ERROR_MEMORY_OVERRUN = 0x03
+    TAG_ERROR_MEMORY_LOCKED = 0x04
+    TAG_ERROR_INSUFFICIENT_POWER = 0x0B
+    TAG_ERROR_NON_SPECIFIC = 0x0F
+
     PWD_ZERO = new Uint8Array([0x00, 0x00, 0x00, 0x00]);
 
 
@@ -497,6 +504,31 @@ export class UHFReader18CompliantReader {
         ]);
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
+    }
+
+    async write_password(
+        epc:Uint8Array,
+        access:Uint8Array,
+        kill:Uint8Array=this.PWD_ZERO,
+        pwd:Uint8Array=this.PWD_ZERO,
+        ...args
+    ) {
+        if (access.length != 4) {
+            throw new Error("Access Password should be exactly 4 bytes.");
+        }
+        if (kill.length != 4) {
+            throw new Error("Kill Password should be exactly 4 bytes.");
+        }
+
+        let data = concatBytes([kill, access]);
+        return this.write_data(
+            epc,
+            new Uint8Array([this.MEM_PWD]),
+            new Uint8Array([0]),
+            data,
+            pwd,
+            ...args,
+        )
     }
 
     async write_epc(
