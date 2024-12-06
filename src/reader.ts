@@ -307,6 +307,7 @@ export class UHFReader18CompliantReader {
             );
         } else if (status == 0xFC) {
             throw new exceptions.TagReturnCodeError(
+                response["data"][0],
                 "Error code: " + bytesToHex(response["data"])
             );
         } else if (status == 0xFD) {

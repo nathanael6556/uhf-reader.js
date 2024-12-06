@@ -98,13 +98,16 @@ export class NoTagOperableError extends Error {
 }
 
 export class TagReturnCodeError extends Error {
-    constructor(message?: string) {
+    tagErrorCode: number;
+
+    constructor(tagErrorCode: number, message?: string) {
         const baseMessage = "Tag return error code";
         if (!message) {
             message = baseMessage
         }
         super(message);
         this.name = "TagReturnCodeError";
+        this.tagErrorCode = tagErrorCode;
     }
 }
 
