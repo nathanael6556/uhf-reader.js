@@ -507,10 +507,10 @@ export class UHFReader18CompliantReader {
     }
 
     async write_password(
-        epc:Uint8Array,
-        access:Uint8Array,
-        kill:Uint8Array=this.PWD_ZERO,
-        pwd:Uint8Array=this.PWD_ZERO,
+        epc: Uint8Array,
+        access: Uint8Array,
+        kill: Uint8Array = this.PWD_ZERO,
+        pwd: Uint8Array = this.PWD_ZERO,
         ...args
     ) {
         if (access.length != 4) {
@@ -671,6 +671,18 @@ export class UHFReader18CompliantReader {
             power: resp_data.slice(6),
             scan_time: resp_data.slice(7)
         };
+    }
+
+    async acoustooptic_control(
+        activeTime: Uint8Array,
+        silentTime: Uint8Array,
+        times: Uint8Array
+    ): Promise<void> {
+        const cmd = this.CMD_ACOUSTOOPTIC_CONTROL;
+        const data = concatBytes([activeTime, silentTime, times]);
+        const response = await this.send_command(cmd, data);
+
+        this.assert_resp_zero_status(response);
     }
 
     async set_work_mode(
