@@ -485,23 +485,24 @@ export class UHFReader18CompliantReader {
         wordptr: Uint8Array,
         wdt: Uint8Array,
         pwd: Uint8Array = this.PWD_ZERO,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<void> {
         const cmd = this.CMD_WRITE_DATA;
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const wnum = numberToBytes(this.calc_word_length(wdt), 1, 'big');
-        const data = concatBytes([
+        let data = concatBytes([
             wnum,
             _enum,
             epc,
             mem,
             wordptr,
             wdt,
-            pwd,
-            maskadr,
-            masklen
+            pwd
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
