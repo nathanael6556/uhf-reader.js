@@ -451,8 +451,8 @@ export class UHFReader18CompliantReader {
         wordptr: Uint8Array = new Uint8Array([0x00]),
         num: Uint8Array = new Uint8Array([0x77]),
         pwd: Uint8Array = this.PWD_ZERO,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<EPCBlock | PasswordBlock | Uint8Array> {
         let _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         let cmd = this.CMD_READ_DATA;
@@ -462,10 +462,11 @@ export class UHFReader18CompliantReader {
             numberToBytes(mem, 1, 'big'),
             wordptr,
             num,
-            pwd,
-            maskadr,
-            masklen
+            pwd
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         let response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
 
@@ -550,18 +551,19 @@ export class UHFReader18CompliantReader {
     async kill_tag(
         epc: Uint8Array,
         killpwd: Uint8Array,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_KILL_TAG;
-        const data = concatBytes([
+        let data = concatBytes([
             _enum,
             epc,
             killpwd,
-            maskadr,
-            masklen
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
@@ -571,20 +573,21 @@ export class UHFReader18CompliantReader {
         select: Uint8Array,
         setprotect: Uint8Array,
         pwd: Uint8Array,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_LOCK;
-        const data = concatBytes([
+        let data = concatBytes([
             _enum,
             epc,
             select,
             setprotect,
-            pwd,
-            maskadr,
-            masklen
+            pwd
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
@@ -595,21 +598,22 @@ export class UHFReader18CompliantReader {
         wordptr: Uint8Array,
         num: Uint8Array,
         pwd: Uint8Array = this.PWD_ZERO,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<void> {
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const cmd = this.CMD_BLOCK_ERASE;
-        const data = concatBytes([
+        let data = concatBytes([
             _enum,
             epc,
             mem,
             wordptr,
             num,
-            pwd,
-            maskadr,
-            masklen
+            pwd
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
@@ -634,23 +638,24 @@ export class UHFReader18CompliantReader {
         wordptr: Uint8Array,
         wdt: Uint8Array,
         pwd: Uint8Array = this.PWD_ZERO,
-        maskadr: Uint8Array = new Uint8Array([0x00]),
-        masklen: Uint8Array = new Uint8Array([0x01])
+        maskadr: Uint8Array = null,
+        masklen: Uint8Array = null
     ): Promise<void> {
         const cmd = this.CMD_BLOCK_WRITE;
         const _enum = numberToBytes(this.calc_word_length(epc), 1, 'big');
         const wnum = numberToBytes(this.calc_word_length(wdt), 1, 'big');
-        const data = concatBytes([
+        let data = concatBytes([
             wnum,
             _enum,
             epc,
             mem,
             wordptr,
             wdt,
-            pwd,
-            maskadr,
-            masklen
+            pwd
         ]);
+        if (maskadr != null && masklen != null) {
+            data = concatBytes([data, maskadr, masklen]);
+        }
         const response = await this.send_command(cmd, data);
         this.assert_resp_zero_status(response);
     }
